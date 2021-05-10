@@ -56,6 +56,5 @@ class RemindersListViewModel(
      */
     private fun invalidateShowNoData() {
         showNoData.postValue(remindersList.value == null || remindersList.value!!.isEmpty())
-      //  showNoData.value =
     }
 }

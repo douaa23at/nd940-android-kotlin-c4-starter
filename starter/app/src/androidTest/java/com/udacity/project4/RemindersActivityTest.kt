@@ -103,8 +103,5 @@ class RemindersActivityTest :
                 )
             )
         activityScenario.close()
-      //  onView(withText("title")).check(matches(isDisplayed()))
     }
-//    TODO: add End to End testing to the app
-
 }

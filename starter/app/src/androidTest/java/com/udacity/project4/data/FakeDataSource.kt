@@ -17,7 +17,7 @@ class FakeRemindersLocalRepository(var reminders: MutableList<ReminderDTO>? = mu
 
     override suspend fun getReminder(id: String) : Result<ReminderDTO> {
         val reminder = reminders?.find { reminder -> reminder.id == id }
-        return if (reminder == null)  Result.Error("", null)
+        return if (reminder == null)  Result.Error("Error", null)
         else Result.Success(reminder)
     }
 

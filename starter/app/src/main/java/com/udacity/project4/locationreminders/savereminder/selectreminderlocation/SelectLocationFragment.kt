@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -46,23 +47,15 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     ): View? {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
+        Toast.makeText(requireContext(),"Please select a location",Toast.LENGTH_LONG).show()
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
-        (childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment).getMapAsync(
-            this
-        )
-
-//        TODO: add the map setup implementation
-//        TODO: zoom to the user location after taking his permission
-//        TODO: add style to the map
-//        TODO: put a marker to location that the user selected
-
-
-//        TODO: call this function after the user confirms on the selected location
+        (childFragmentManager.findFragmentById(R.id.mapFragment)
+                as SupportMapFragment).getMapAsync(this)
 
         binding.save.setOnClickListener {
             onLocationSelected()
@@ -81,7 +74,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
         R.id.normal_map -> {
             map.mapType = GoogleMap.MAP_TYPE_NORMAL
             true
@@ -108,27 +100,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapStyle(map)
         enableMyLocation()
     }
-
-    private fun setMapOnLongClick() {
-        map.setOnMapLongClickListener { latLng ->
-            val snippet = String.format(
-                Locale.getDefault(),
-                "Lat: %1$.5f, Long: %2$.5f",
-                latLng.latitude,
-                latLng.longitude
-            )
-            map.addMarker(
-                MarkerOptions()
-                    .position(latLng)
-                    .title(getString(R.string.dropped_pin))
-                    .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-            )
-            // _viewModel.selectedPOI.value = PointOfInterest(latLng,"","")
-        }
-
-    }
-
 
     private fun setOnPoiClick() {
         map.setOnPoiClickListener { poi ->
@@ -169,14 +140,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
-            val zoomLevel = 10f
+            val zoomLevel = 15f
             map.isMyLocationEnabled = true
             val fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(requireActivity())
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location ->
                     val homeLatLng = LatLng(location.latitude, location.longitude)
-                    //  map.addMarker(MarkerOptions().position(homeLatLng).title("My location"))
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
                 }
 
