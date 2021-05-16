@@ -27,13 +27,9 @@ import com.udacity.project4.utils.sendNotification
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.i("douaa","on receive is here")
         GeofenceTransitionsJobIntentService.enqueueWork(
             context,
             intent
         )
-
     }
 }
-
-private const val TAG = "GeofenceReceiver"

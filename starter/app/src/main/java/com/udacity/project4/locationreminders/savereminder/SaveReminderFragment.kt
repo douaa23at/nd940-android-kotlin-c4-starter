@@ -31,6 +31,8 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.GeofencingConstants
 import com.udacity.project4.utils.LandmarkDataObject
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import kotlinx.android.synthetic.main.fragment_save_reminder.*
+import org.koin.android.ext.android.bind
 import org.koin.android.ext.android.inject
 
 class SaveReminderFragment : BaseFragment() {
@@ -55,9 +57,7 @@ class SaveReminderFragment : BaseFragment() {
 
         setDisplayHomeAsUpEnabled(true)
         geofencingClient = LocationServices.getGeofencingClient(requireContext())
-
         binding.viewModel = _viewModel
-
         return binding.root
     }
 
@@ -90,12 +90,12 @@ class SaveReminderFragment : BaseFragment() {
                     location,
                     latitude.value,
                     longitude
-            ))
+                )
+            )
             _viewModel.validateAndSaveReminder(reminderDataItem)
-//            TODO: use the user entered reminder details to:
-//             1) add a geofencing request
-//             2) save the reminder to the local db
-            addGeofence(reminderDataItem)
+            if (_viewModel.validateEnteredData(reminderDataItem)) {
+                addGeofence(reminderDataItem)
+            }
         }
     }
 
@@ -169,8 +169,7 @@ class SaveReminderFragment : BaseFragment() {
             }
             else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
         }
-        ActivityCompat.requestPermissions(
-            requireActivity(),
+        requestPermissions(
             permissionsArray,
             resultCode
         )
@@ -210,6 +209,7 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
+
     /*
      *  Uses the Location Client to check the current state of location settings, and gives the user
      *  the opportunity to turn on location services within our app.
@@ -231,20 +231,22 @@ class SaveReminderFragment : BaseFragment() {
                     )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Log.d(TAG, "Error getting location settings resolution: " + sendEx.message)
+                    Toast.makeText(
+                        requireContext(),
+                        requireContext().getString(R.string.location_required_error),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
-            } else {
+            }
+        }
+        locationSettingsResponseTask.addOnSuccessListener {
+            binding.saveReminder.visibility = View.VISIBLE
+        }
 
-            }
-        }
-        locationSettingsResponseTask.addOnCompleteListener {
-            if (it.isSuccessful) {
-                //    addGeofenceForClue()
-            }
-        }
     }
 
     @SuppressLint("MissingPermission")
-    private fun addGeofence(reminderData : ReminderDataItem) {
+    private fun addGeofence(reminderData: ReminderDataItem) {
         val geofence = Geofence.Builder()
             .setRequestId(reminderData.id)
             .setCircularRegion(
@@ -261,13 +263,9 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        //geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-        //  addOnCompleteListener {
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
             addOnSuccessListener {
-
                 Log.e("Add Geofence", reminderData.latitude.toString())
-                //      _viewModel.geofenceActivated()
             }
             addOnFailureListener {
                 if ((it.message != null)) {
@@ -275,9 +273,6 @@ class SaveReminderFragment : BaseFragment() {
                 }
             }
         }
-        // }
-        //}
-
     }
 
     override fun onDestroy() {
@@ -288,13 +283,13 @@ class SaveReminderFragment : BaseFragment() {
 
     companion object {
         internal const val ACTION_GEOFENCE_EVENT =
-            "HuntMainActivity.treasureHunt.action.ACTION_GEOFENCE_EVENT"
+            "RemindersActivity.action.ACTION_GEOFENCE_EVENT"
     }
 }
 
 private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-private const val TAG = "HuntMainActivity"
+private const val TAG = "RemindersActivity"
 private const val LOCATION_PERMISSION_INDEX = 0
 private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1

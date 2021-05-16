@@ -10,6 +10,7 @@ import androidx.navigation.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.RemindersActivity
 import kotlinx.android.synthetic.main.activity_authentication.*
@@ -31,6 +32,12 @@ class AuthenticationActivity : AppCompatActivity() {
 
 //          TODO: If the user was authenticated, send him to RemindersActivity
 
+            FirebaseAuth.getInstance().addAuthStateListener {
+                if(it.currentUser!= null ){
+                    finish()
+                    startActivity(Intent(this,RemindersActivity::class.java))
+                }
+            }
 //          TODO: a bonus is to customize the sign in flow to look nice using :
         //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
 
@@ -46,6 +53,7 @@ class AuthenticationActivity : AppCompatActivity() {
                     "Successfully signed in user " +
                             "${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
+                finish()
                 startActivity(Intent(this,RemindersActivity::class.java))
             } else {
                 // Sign in failed. If response is null the user canceled the sign-in flow using

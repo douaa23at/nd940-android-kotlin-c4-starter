@@ -47,7 +47,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     ): View? {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
-        Toast.makeText(requireContext(),"Please select a location",Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "Please select a location", Toast.LENGTH_LONG).show()
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
@@ -97,6 +97,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         map = googleMap
 
         setOnPoiClick()
+        setMapOnLongClick()
+        setMapClick()
         setMapStyle(map)
         enableMyLocation()
     }
@@ -110,6 +112,48 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             ).showInfoWindow()
             _viewModel.setPoiData(poi)
         }
+    }
+
+    private fun setMapOnLongClick() {
+        map.setOnMapLongClickListener { latLng ->
+            val name = "Lat: %1$.5f, Long: %2$.5f"
+            val snippet = String.format(
+                Locale.getDefault(),
+                name,
+                latLng.latitude,
+                latLng.longitude
+            )
+            map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+                    .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            ).showInfoWindow()
+            _viewModel.setPoiOnLongClickData(latLng, "" + Random(100).nextInt(), name)
+        }
+
+    }
+
+    private fun setMapClick() {
+        map.setOnMapClickListener { latLng ->
+            val name = "Lat: %1$.5f, Long: %2$.5f"
+            val snippet = String.format(
+                Locale.getDefault(),
+                name,
+                latLng.latitude,
+                latLng.longitude
+            )
+            map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+                    .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            ).showInfoWindow()
+            _viewModel.setPoiOnLongClickData(latLng, "" + Random(100).nextInt(), name)
+        }
+
     }
 
     private fun setMapStyle(map: GoogleMap) {
