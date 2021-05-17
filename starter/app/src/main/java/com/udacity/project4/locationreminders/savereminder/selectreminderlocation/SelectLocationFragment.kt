@@ -9,6 +9,7 @@ import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -17,7 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -184,16 +185,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
-            val zoomLevel = 15f
             map.isMyLocationEnabled = true
-            val fusedLocationClient =
-                LocationServices.getFusedLocationProviderClient(requireActivity())
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    val homeLatLng = LatLng(location.latitude, location.longitude)
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+                .addOnCompleteListener { task ->
+                    val location = task.result
+                    if(location == null){
+                        requestNewLocationData(fusedLocationClient)
+                    }else{
+                        setLastLocation(location)
+                    }
                 }
-
 
         } else {
             ActivityCompat.requestPermissions(
@@ -201,6 +203,30 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 arrayOf<String>(android.Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
+        }
+    }
+
+    private fun setLastLocation(location : Location){
+        val zoomLevel = 15f
+        val homeLatLng = LatLng(location.latitude, location.longitude)
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData(fusedLocationClient : FusedLocationProviderClient) {
+        val locationCallback: LocationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                setLastLocation(locationResult.lastLocation)
+            }
+        }
+
+        with(LocationRequest()) {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 0
+            fastestInterval = 0
+            numUpdates = 1
+
+            fusedLocationClient.requestLocationUpdates(this, locationCallback, Looper.myLooper())
         }
     }
 

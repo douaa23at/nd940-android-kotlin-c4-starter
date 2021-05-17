@@ -92,7 +92,6 @@ class SaveReminderFragment : BaseFragment() {
                     longitude
                 )
             )
-            _viewModel.validateAndSaveReminder(reminderDataItem)
             if (_viewModel.validateEnteredData(reminderDataItem)) {
                 addGeofence(reminderDataItem)
             }
@@ -192,18 +191,8 @@ class SaveReminderFragment : BaseFragment() {
                     grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
                     PackageManager.PERMISSION_DENIED)
         ) {
-            Snackbar.make(
-                binding.saveFragmentReminderCanvas,
-                R.string.permission_denied_explanation,
-                Snackbar.LENGTH_INDEFINITE
-            )
-                .setAction(R.string.settings) {
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
-                }.show()
+           _viewModel.locationDenied()
+
         } else {
             checkDeviceLocationSettingsAndStartGeofence()
         }
