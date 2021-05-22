@@ -1,6 +1,8 @@
 package com.udacity.project4.locationreminders.reminderslist
 
 import android.app.Application
+import android.content.Context
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.ui.NavigationUI
@@ -18,6 +20,7 @@ class RemindersListViewModel(
 ) : BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
+    val logoutMenu = MutableLiveData<Unit>()
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -59,6 +62,16 @@ class RemindersListViewModel(
      */
     private fun invalidateShowNoData() {
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+    }
+
+    fun logout(context: Context) {
+        showLoading.value = true
+        viewModelScope.launch {
+            AuthUI.getInstance().signOut(context).addOnCompleteListener {
+                showLoading.value = false
+                logoutMenu.value = Unit
+            }
+        }
     }
 
 }

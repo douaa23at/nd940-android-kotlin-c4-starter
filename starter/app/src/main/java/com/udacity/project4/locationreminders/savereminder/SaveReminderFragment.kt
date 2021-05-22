@@ -7,9 +7,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +17,6 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.snackbar.Snackbar
-import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -29,10 +24,7 @@ import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.GeofencingConstants
-import com.udacity.project4.utils.LandmarkDataObject
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import kotlinx.android.synthetic.main.fragment_save_reminder.*
-import org.koin.android.ext.android.bind
 import org.koin.android.ext.android.inject
 
 class SaveReminderFragment : BaseFragment() {
@@ -41,19 +33,25 @@ class SaveReminderFragment : BaseFragment() {
     private lateinit var binding: FragmentSaveReminderBinding
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
+    private lateinit var geofencePendingIntent: PendingIntent
     private lateinit var geofencingClient: GeofencingClient
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
+
+
+        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        intent.action = ACTION_GEOFENCE_EVENT
+        geofencePendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         setDisplayHomeAsUpEnabled(true)
         geofencingClient = LocationServices.getGeofencingClient(requireContext())
@@ -83,15 +81,7 @@ class SaveReminderFragment : BaseFragment() {
                 latitude.value,
                 longitude
             )
-            _viewModel.validateAndSaveReminder(
-                ReminderDataItem(
-                    title,
-                    description.value,
-                    location,
-                    latitude.value,
-                    longitude
-                )
-            )
+            _viewModel.validateAndSaveReminder(reminderDataItem)
             if (_viewModel.validateEnteredData(reminderDataItem)) {
                 addGeofence(reminderDataItem)
             }
@@ -183,15 +173,13 @@ class SaveReminderFragment : BaseFragment() {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        Log.d(TAG, "onRequestPermissionResult")
-
         if (grantResults.isEmpty() ||
             grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
             (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
                     grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
                     PackageManager.PERMISSION_DENIED)
         ) {
-           _viewModel.locationDenied()
+            _viewModel.locationDenied()
 
         } else {
             checkDeviceLocationSettingsAndStartGeofence()
@@ -221,7 +209,7 @@ class SaveReminderFragment : BaseFragment() {
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Log.d(TAG, "Error getting location settings resolution: " + sendEx.message)
                     Toast.makeText(
-                        requireContext(),
+                        requireActivity(),
                         requireContext().getString(R.string.location_required_error),
                         Toast.LENGTH_LONG
                     ).show()
@@ -252,12 +240,13 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 Log.e("Add Geofence", reminderData.latitude.toString())
             }
             addOnFailureListener {
                 if ((it.message != null)) {
+                    Log.w("geofence", "failed")
                     Log.w(TAG, it.message!!)
                 }
             }
