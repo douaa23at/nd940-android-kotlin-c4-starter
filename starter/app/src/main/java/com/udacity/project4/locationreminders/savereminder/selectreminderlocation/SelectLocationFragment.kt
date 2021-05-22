@@ -27,7 +27,6 @@ import com.google.android.gms.maps.model.*
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
-import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
@@ -117,7 +116,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun setMapOnLongClick() {
         map.setOnMapLongClickListener { latLng ->
-            val name = "Lat: %1$.5f, Long: %2$.5f"
+            val name = "Lat: ${latLng.latitude}, Long : ${latLng.longitude}"
             val snippet = String.format(
                 Locale.getDefault(),
                 name,
@@ -138,7 +137,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun setMapClick() {
         map.setOnMapClickListener { latLng ->
-            val name = "Lat: %1$.5f, Long: %2$.5f"
+            val name = "Lat: ${latLng.latitude}, Long : ${latLng.longitude}"
             val snippet = String.format(
                 Locale.getDefault(),
                 name,
@@ -186,13 +185,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
             map.isMyLocationEnabled = true
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            val fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(requireActivity())
             fusedLocationClient.lastLocation
                 .addOnCompleteListener { task ->
                     val location = task.result
-                    if(location == null){
+                    if (location == null) {
                         requestNewLocationData(fusedLocationClient)
-                    }else{
+                    } else {
                         setLastLocation(location)
                     }
                 }
@@ -206,14 +206,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-    private fun setLastLocation(location : Location){
+    private fun setLastLocation(location: Location) {
         val zoomLevel = 15f
         val homeLatLng = LatLng(location.latitude, location.longitude)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
     }
 
     @SuppressLint("MissingPermission")
-    private fun requestNewLocationData(fusedLocationClient : FusedLocationProviderClient) {
+    private fun requestNewLocationData(fusedLocationClient: FusedLocationProviderClient) {
         val locationCallback: LocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 setLastLocation(locationResult.lastLocation)

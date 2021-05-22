@@ -180,7 +180,6 @@ class SaveReminderFragment : BaseFragment() {
                     PackageManager.PERMISSION_DENIED)
         ) {
             _viewModel.locationDenied()
-
         } else {
             checkDeviceLocationSettingsAndStartGeofence()
         }
