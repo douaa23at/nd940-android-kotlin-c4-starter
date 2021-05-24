@@ -34,10 +34,10 @@ class SaveReminderViewModelTest {
 
     private lateinit var saveReminderViewModel: SaveReminderViewModel
     private lateinit var fakeDataSource: FakeDataSource
-    private lateinit var database: RemindersDatabase
 
     @Before
     fun init() {
+        fakeDataSource = FakeDataSource()
         saveReminderViewModel =
             SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
     }
@@ -77,5 +77,11 @@ class SaveReminderViewModelTest {
         assertThat(reminder.data, `is`(reminderDTO))
     }
 
+    @Test
+    fun testShowToast() = mainCoroutineRule.runBlockingTest {
+        val reminderData = ReminderDataItem("title", "description", "location", null, null)
+        saveReminderViewModel.validateAndSaveReminder(reminderData)
+        assertThat(saveReminderViewModel.showToast.value ,`is`("Reminder Saved !"))
+    }
 
 }

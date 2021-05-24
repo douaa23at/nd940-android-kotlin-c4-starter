@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -82,4 +83,8 @@ class RemindersLocalRepositoryTest {
         assertThat(reminders, `is`(Result.Success(emptyList())))
     }
 
+    @After
+    fun closeDb() {
+        database.close()
+    }
 }
