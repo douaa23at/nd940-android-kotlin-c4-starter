@@ -61,7 +61,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
                 )
             )
             showLoading.value = false
-            showToast.value = app.getString(R.string.reminder_saved)
+            showToast.postValue(app.getString(R.string.reminder_saved))
             navigationCommand.value = NavigationCommand.Back
         }
     }
@@ -96,7 +96,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         longitude.value = latLng.longitude
     }
 
-    fun locationDenied(){
+    fun locationDenied() {
         showSnackBarInt.value = R.string.location_required_error
     }
 

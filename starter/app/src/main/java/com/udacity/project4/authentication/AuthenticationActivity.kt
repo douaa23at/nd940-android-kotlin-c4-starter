@@ -28,10 +28,6 @@ class AuthenticationActivity : AppCompatActivity() {
             launchSignInFlow()
         }
 
-//         TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google
-
-//          TODO: If the user was authenticated, send him to RemindersActivity
-
             FirebaseAuth.getInstance().addAuthStateListener {
                 if(it.currentUser!= null ){
                     finish()

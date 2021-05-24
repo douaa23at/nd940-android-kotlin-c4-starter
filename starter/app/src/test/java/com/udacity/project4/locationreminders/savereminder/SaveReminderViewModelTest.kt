@@ -2,12 +2,14 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.data.local.RemindersDatabase
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.locationreminders.util.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,10 +34,10 @@ class SaveReminderViewModelTest {
 
     private lateinit var saveReminderViewModel: SaveReminderViewModel
     private lateinit var fakeDataSource: FakeDataSource
+    private lateinit var database: RemindersDatabase
 
     @Before
     fun init() {
-        fakeDataSource = FakeDataSource()
         saveReminderViewModel =
             SaveReminderViewModel(ApplicationProvider.getApplicationContext(), fakeDataSource)
     }

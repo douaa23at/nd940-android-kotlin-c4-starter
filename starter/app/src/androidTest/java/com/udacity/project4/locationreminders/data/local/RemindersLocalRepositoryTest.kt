@@ -23,8 +23,6 @@ import org.junit.runner.RunWith
 @MediumTest
 class RemindersLocalRepositoryTest {
 
-    //    TODO: Add testing implementation to the RemindersLocalRepository.kt
-
     private lateinit var remindersLocalRepository: RemindersLocalRepository
     lateinit var database: RemindersDatabase
 
@@ -65,6 +63,13 @@ class RemindersLocalRepositoryTest {
         database.reminderDao().saveReminder(reminderDTO)
         val reminder = remindersLocalRepository.getReminder(reminderDTO.id) as Result.Success
         assertThat(reminder, `is`(Result.Success(reminderDTO)))
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun reminderNotFound() = runBlocking {
+        val reminder = remindersLocalRepository.getReminder("id") as Result.Error
+        assertThat(reminder, `is`(Result.Error("Reminder not found!")))
     }
 
     @ExperimentalCoroutinesApi
